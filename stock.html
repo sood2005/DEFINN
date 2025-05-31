@@ -1,0 +1,771 @@
+<html class="scroll-smooth" lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>
+   Stock Trading Interface
+  </title>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+  <style>
+   body {
+      font-family: 'Inter', sans-serif;
+    }
+   /* Hide number input spin buttons */
+   /* Chrome, Safari, Edge, Opera */
+   input[type=number]::-webkit-inner-spin-button, 
+   input[type=number]::-webkit-outer-spin-button { 
+     -webkit-appearance: none; 
+     margin: 0; 
+   }
+   /* Firefox */
+   input[type=number] {
+     -moz-appearance: textfield;
+   }
+  </style>
+ </head>
+ <body class="bg-gray-50 min-h-screen flex flex-col">
+  <header class="bg-white shadow-md sticky top-0 z-30">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+    <div class="flex items-center space-x-3">
+     <img alt="Stock Trading logo with letters ST in blue and white" class="h-10 w-10 rounded-md" height="40" src="definn.svg" width="40"/>
+     <h1 class="text-2xl font-semibold text-blue-700">
+      DEFINN
+     </h1>
+    </div>
+    <nav class="hidden md:flex space-x-8 text-gray-700 font-medium items-center relative">
+     <a class="hover:text-blue-600 transition" href="#">
+      Dashboard
+     </a>
+     <div id="portfolio-container" class="hover:text-blue-600 transition cursor-pointer flex flex-col">
+      <button id="portfolio-button" class="focus:outline-none">
+       <span>Portfolio</span>
+      </button>
+     </div>
+     <div id="portfolio-section" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex justify-center items-center">
+      <div class="bg-white rounded-lg shadow-lg w-96 p-6 relative max-h-[80vh] overflow-y-auto">
+       <button id="close-portfolio-section" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 focus:outline-none" aria-label="Close portfolio section">
+        <i class="fas fa-times fa-lg"></i>
+       </button>
+       <h3 class="text-xl font-semibold mb-4">Portfolio</h3>
+       <div id="portfolio-stocks" class="flex flex-col space-y-2">
+        <!-- Stocks will be dynamically added here -->
+       </div>
+      </div>
+     </div>
+     <div id="orders-container" class="hover:text-blue-600 transition cursor-pointer flex flex-col">
+      <button id="orders-button" class="focus:outline-none">
+       <span>Orders</span>
+      </button>
+     </div>
+     <div id="orders-section" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex justify-center items-center">
+      <div class="bg-white rounded-lg shadow-lg w-96 p-6 relative max-h-[80vh] overflow-y-auto">
+       <button id="close-orders-section" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 focus:outline-none" aria-label="Close orders section">
+        <i class="fas fa-times fa-lg"></i>
+       </button>
+       <h3 class="text-xl font-semibold mb-4">Orders</h3>
+       <div id="orders-list" class="flex flex-col space-y-2">
+        <!-- Orders will be dynamically added here -->
+       </div>
+      </div>
+     </div>
+     <div class="relative group">
+      <button id="funds-button" aria-haspopup="true" aria-expanded="false" class="hover:text-blue-600 transition flex items-center space-x-1 focus:outline-none">
+       <span>Funds</span>
+      </button>
+     </div>
+     <div id="funds-section" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex justify-center items-center">
+      <div class="bg-white rounded-lg shadow-lg w-96 p-6 relative">
+       <button id="close-funds-section" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 focus:outline-none" aria-label="Close funds section">
+        <i class="fas fa-times fa-lg"></i>
+       </button>
+       <h3 class="text-xl font-semibold mb-4">Funds</h3>
+       <p class="text-gray-700 font-semibold mb-2">Available Balance</p>
+       <p class="text-2xl font-bold text-green-600 mb-6" id="available-balance">₹50,000.00</p>
+       <div class="flex space-x-2">
+       <button id="add-funds-btn" class="flex-grow bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md transition">
+         ADD FUNDS
+        </button>
+        <button id="withdraw-funds-btn" class="flex-grow bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-md transition">
+         WITHDRAW FUNDS
+        </button>
+       </div>
+      </div>
+     </div>
++    <div id="funds-action-section" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex justify-center items-center">
++      <div class="bg-white rounded-lg shadow-lg w-96 p-6 relative max-h-[80vh] overflow-y-auto">
++        <button id="close-funds-action-section" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 focus:outline-none" aria-label="Close funds action section">
++          <i class="fas fa-times fa-lg"></i>
++        </button>
++        <h3 class="text-xl font-semibold mb-4" id="funds-action-title">Add Funds</h3>
++        <form id="funds-action-form" class="flex flex-col space-y-4">
++          <label for="funds-amount" class="font-semibold text-gray-700">Amount (₹)</label>
++          <input type="number" id="funds-amount" min="1" step="0.01" required class="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
++          <label for="payment-method" class="font-semibold text-gray-700">Payment Method</label>
++          <select id="payment-method" required class="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
++            <option value="" disabled selected>Select a payment method</option>
++            <option value="gpay">GPay</option>
++            <option value="card">Card</option>
++            <option value="netbanking">Net Banking</option>
++          </select>
++          <div class="flex space-x-4">
++            <button type="submit" class="flex-grow bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md transition">Submit</button>
++            <button type="button" id="cancel-funds-action" class="flex-grow bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-2 rounded-md transition">Cancel</button>
++          </div>
++        </form>
++        <p id="funds-action-message" class="mt-4 text-center text-sm font-medium"></p>
++      </div>
++    </div>
+    </nav>
+    <button aria-label="Open menu" class="md:hidden text-gray-700 hover:text-blue-600 focus:outline-none" id="mobile-menu-button">
+     <i class="fas fa-bars fa-lg">
+     </i>
+    </button>
+   </div>
+   <nav aria-label="Mobile menu" class="md:hidden bg-white border-t border-gray-200 hidden" id="mobile-menu">
+    <a class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition" href="#">
+     Dashboard
+    </a>
+    <a class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition" href="#">
+     Portfolio
+    </a>
+    <a class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition" href="#">
+     Orders
+    </a>
+    <a class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition" href="#">
+     Funds
+    </a>
+    <a class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition" href="#">
+     Settings
+    </a>
+   </nav>
+  </header>
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+   <section class="mb-10">
+    <h2 class="text-3xl font-semibold text-gray-800 mb-6">
+     Live Stock Trading
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+     <!-- Stock List & Search -->
+     <div class="bg-white rounded-lg shadow p-6 flex flex-col">
+      <label class="block text-gray-700 font-semibold mb-2" for="stock-search">
+       Search Stocks
+      </label>
+      <input class="mb-4 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="stock-search" placeholder="Enter stock symbol or name" type="text"/>
+      <div class="flex-grow overflow-y-auto border border-gray-200 rounded-md">
+       <ul class="divide-y divide-gray-200" id="stock-list">
+        <!-- Stocks will be dynamically inserted here -->
+       </ul>
+      </div>
+     </div>
+     <!-- Stock Details & Chart -->
+     <div class="bg-white rounded-lg shadow p-6 flex flex-col">
+      <div class="mb-6" id="stock-details">
+       <h3 class="text-2xl font-semibold text-gray-800" id="stock-name">
+        Select a stock
+       </h3>
+       <p class="text-gray-500" id="stock-symbol">
+       </p>
+       <p class="text-3xl font-bold text-blue-600 mt-2" id="stock-price">
+        --
+       </p>
+       <p class="mt-1 text-sm text-gray-600" id="stock-change">
+        --
+       </p>
+      </div>
+      <div class="flex-grow">
+       <img alt="Placeholder for stock price chart showing candlestick graph with green and red bars" class="w-full h-60 object-contain rounded-md" height="300" id="stock-chart" src="https://storage.googleapis.com/a1aa/image/895e9052-d13a-403e-800f-3af37c85a221.jpg" width="600"/>
+      </div>
+     </div>
+     <!-- Buy/Sell Form -->
+     <div class="bg-white rounded-lg shadow p-6 flex flex-col">
+      <h3 class="text-2xl font-semibold text-gray-800 mb-4">
+       Trade Stock
+      </h3>
+      <form class="flex flex-col space-y-4" id="trade-form">
+       <div>
+        <label class="block text-gray-700 font-semibold mb-1" for="trade-stock-symbol">
+         Stock Symbol
+        </label>
+        <input class="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed" id="trade-stock-symbol" name="trade-stock-symbol" placeholder="Select a stock from the list" readonly="" required="" type="text"/>
+       </div>
+       <div>
+        <label class="block text-gray-700 font-semibold mb-1" for="trade-type">
+         Trade Type
+        </label>
+        <select class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="trade-type" name="trade-type" required="">
+         <option value="buy">
+          Buy
+         </option>
+         <option value="sell">
+          Sell
+         </option>
+        </select>
+       </div>
+       <div>
+        <label class="block text-gray-700 font-semibold mb-1" for="trade-quantity">
+         Quantity
+        </label>
+        <input class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="trade-quantity" min="1" name="trade-quantity" placeholder="Enter quantity" required="" step="1" type="number"/>
+       </div>
+       <div>
+        <label class="block text-gray-700 font-semibold mb-1" for="trade-price">
+         Price (₹)
+        </label>
+        <input class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="trade-price" min="0" name="trade-price" placeholder="Market price or limit price" required="" step="0.01" type="number"/>
+       </div>
+       <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition" type="submit">
+        Place Order
+       </button>
+      </form>
+      <div class="mt-4 text-center text-sm font-medium" id="trade-message">
+      </div>
+     </div>
+    </div>
+   </section>
+   <section>
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">
+     Recent Orders
+    </h2>
+    <div class="overflow-x-auto bg-white rounded-lg shadow">
+     <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+       <tr>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" scope="col">
+         Order ID
+        </th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" scope="col">
+         Stock
+        </th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" scope="col">
+         Type
+        </th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" scope="col">
+         Quantity
+        </th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" scope="col">
+         Price (₹)
+        </th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" scope="col">
+         Status
+        </th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" scope="col">
+         Time
+        </th>
+       </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200" id="orders-table-body">
+       <!-- Orders will be dynamically inserted here -->
+      </tbody>
+     </table>
+    </div>
+   </section>
+  </main>
+  <footer class="bg-white border-t border-gray-200 py-6 mt-12">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-500 text-sm">
+    © 2024 TradeX. All rights reserved.
+   </div>
+  </footer>
+  <script>
+   // Mobile menu toggle
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileMenuButton.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // Sample stock list (symbol, name)
+    const stocks = [
+      { symbol: 'RELIANCE', name: 'Reliance Industries Limited' },
+      { symbol: 'TCS', name: 'Tata Consultancy Services' },
+      { symbol: 'INFY', name: 'Infosys Limited' },
+      { symbol: 'HDFCBANK', name: 'HDFC Bank Limited' },
+      { symbol: 'ICICIBANK', name: 'ICICI Bank Limited' },
+      { symbol: 'HINDUNILVR', name: 'Hindustan Unilever Limited' },
+      { symbol: 'SBIN', name: 'State Bank of India' },
+      { symbol: 'KOTAKBANK', name: 'Kotak Mahindra Bank Limited' },
+      { symbol: 'LT', name: 'Larsen & Toubro Limited' },
+      { symbol: 'AXISBANK', name: 'Axis Bank Limited' },
+      { symbol: 'MARUTI', name: 'Maruti Suzuki India Limited' },
+      { symbol: 'BHARTIARTL', name: 'Bharti Airtel Limited' },
+      { symbol: 'ITC', name: 'ITC Limited' },
+      { symbol: 'BAJFINANCE', name: 'Bajaj Finance Limited' },
+      { symbol: 'ASIANPAINT', name: 'Asian Paints Limited' }
+    ];
+
+    // Elements
+    const stockListEl = document.getElementById('stock-list');
+    const stockSearchInput = document.getElementById('stock-search');
+    const stockNameEl = document.getElementById('stock-name');
+    const stockSymbolEl = document.getElementById('stock-symbol');
+    const stockPriceEl = document.getElementById('stock-price');
+    const stockChangeEl = document.getElementById('stock-change');
+    const stockChartEl = document.getElementById('stock-chart');
+    const tradeStockSymbolInput = document.getElementById('trade-stock-symbol');
+    const tradeForm = document.getElementById('trade-form');
+    const tradeMessageEl = document.getElementById('trade-message');
+    const tradePriceInput = document.getElementById('trade-price');
+
+    // Orders array to store placed orders
+    let orders = [];
+
+    // Selected stock object
+    let selectedStock = null;
+
+    // Function to fetch live stock data from a public API (mocked here)
+    // Since Zerodha API requires authentication and server-side calls,
+    // here we simulate live data with random price changes.
+    function fetchLiveStockData(symbol) {
+      // Simulate price between 1000 and 3500 with random fluctuation
+      const basePrices = {
+        RELIANCE: 2500,
+        TCS: 3500,
+        INFY: 1500,
+        HDFCBANK: 1600,
+        ICICIBANK: 700,
+        HINDUNILVR: 2300,
+        SBIN: 500,
+        KOTAKBANK: 1900,
+        LT: 2100,
+        AXISBANK: 700,
+        MARUTI: 8000,
+        BHARTIARTL: 700,
+        ITC: 230,
+        BAJFINANCE: 7000,
+        ASIANPAINT: 3200
+      };
+      const base = basePrices[symbol] || 1000;
+      const changePercent = (Math.random() * 4 - 2).toFixed(2); // -2% to +2%
+      const price = (base * (1 + changePercent / 100)).toFixed(2);
+      return {
+        price: parseFloat(price),
+        changePercent: parseFloat(changePercent)
+      };
+    }
+
+    // Function to update stock list based on search
+    function updateStockList(filter = '') {
+      const filteredStocks = stocks.filter(
+        (stock) =>
+          stock.symbol.toLowerCase().includes(filter.toLowerCase()) ||
+          stock.name.toLowerCase().includes(filter.toLowerCase())
+      );
+      stockListEl.innerHTML = '';
+      filteredStocks.forEach((stock) => {
+        const li = document.createElement('li');
+        li.className =
+          'px-4 py-3 cursor-pointer hover:bg-blue-50 flex justify-between items-center';
+        li.tabIndex = 0;
+        li.setAttribute('role', 'button');
+        li.setAttribute('aria-label', `Select stock ${stock.symbol} - ${stock.name}`);
+        li.innerHTML = `
+          <div>
+            <p class="font-semibold text-gray-800">${stock.symbol}</p>
+            <p class="text-sm text-gray-500">${stock.name}</p>
+          </div>
+          <div class="text-blue-600 font-semibold" id="price-${stock.symbol}">--</div>
+        `;
+        li.addEventListener('click', () => {
+          selectStock(stock.symbol);
+        });
+        li.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            selectStock(stock.symbol);
+          }
+        });
+        stockListEl.appendChild(li);
+      });
+      updateAllPrices();
+    }
+
+    // Update all prices in the stock list every 10 seconds
+    function updateAllPrices() {
+      stocks.forEach((stock) => {
+        const data = fetchLiveStockData(stock.symbol);
+        const priceEl = document.getElementById(`price-${stock.symbol}`);
+        if (priceEl) {
+          priceEl.textContent = `₹${data.price.toFixed(2)}`;
+          priceEl.classList.remove('text-green-600', 'text-red-600');
+          if (data.changePercent > 0) {
+            priceEl.classList.add('text-green-600');
+          } else if (data.changePercent < 0) {
+            priceEl.classList.add('text-red-600');
+          }
+        }
+      });
+    }
+
+    // Select a stock and update details panel
+    function selectStock(symbol) {
+      const stock = stocks.find((s) => s.symbol === symbol);
+      if (!stock) return;
+      selectedStock = stock;
+      const liveData = fetchLiveStockData(symbol);
+      stockNameEl.textContent = stock.name;
+      stockSymbolEl.textContent = stock.symbol;
+      stockPriceEl.textContent = `₹${liveData.price.toFixed(2)}`;
+      stockChangeEl.textContent = `${liveData.changePercent > 0 ? '+' : ''}${liveData.changePercent.toFixed(2)}%`;
+      stockChangeEl.classList.remove('text-green-600', 'text-red-600');
+      if (liveData.changePercent > 0) {
+        stockChangeEl.classList.add('text-green-600');
+      } else if (liveData.changePercent < 0) {
+        stockChangeEl.classList.add('text-red-600');
+      }
+      // Update chart placeholder with dynamic image URL (simulate)
+      stockChartEl.src = `https://placehold.co/600x300/png?text=${encodeURIComponent(
+        stock.symbol + ' Chart'
+      )}`;
+      stockChartEl.alt = `Stock price chart placeholder for ${stock.name} showing candlestick graph with green and red bars`;
+
+      // Update trade form symbol and price
+      tradeStockSymbolInput.value = stock.symbol;
+      tradePriceInput.value = liveData.price.toFixed(2);
+      tradeMessageEl.textContent = '';
+    }
+
+    // Handle search input
+    stockSearchInput.addEventListener('input', (e) => {
+      updateStockList(e.target.value);
+    });
+
+    // Handle trade form submission
+    tradeForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!selectedStock) {
+        tradeMessageEl.textContent = 'Please select a stock to trade.';
+        tradeMessageEl.className = 'mt-4 text-center text-sm font-medium text-red-600';
+        return;
+      }
+      const type = tradeForm['trade-type'].value;
+      const quantity = parseInt(tradeForm['trade-quantity'].value, 10);
+      const price = parseFloat(tradeForm['trade-price'].value);
+      if (quantity <= 0 || isNaN(quantity)) {
+        tradeMessageEl.textContent = 'Please enter a valid quantity.';
+        tradeMessageEl.className = 'mt-4 text-center text-sm font-medium text-red-600';
+        return;
+      }
+      if (price <= 0 || isNaN(price)) {
+        tradeMessageEl.textContent = 'Please enter a valid price.';
+        tradeMessageEl.className = 'mt-4 text-center text-sm font-medium text-red-600';
+        return;
+      }
+
+      // Simulate order placement with Zerodha API
+      // NOTE: Actual Zerodha API calls require OAuth and server-side implementation.
+      // Here we simulate success response with a delay.
+      tradeMessageEl.textContent = 'Placing order...';
+      tradeMessageEl.className = 'mt-4 text-center text-sm font-medium text-blue-600';
+
+      setTimeout(() => {
+        const orderId = 'ORD' + Math.floor(Math.random() * 1000000);
+        const now = new Date();
+        const order = {
+          id: orderId,
+          stock: selectedStock.symbol,
+          type,
+          quantity,
+          price,
+          status: 'Completed',
+          time: now.toLocaleString()
+        };
+        orders.unshift(order);
+        updateOrdersTable();
+
+        // Deduct funds if buy order
+        if (type === 'buy') {
+          availableBalance -= quantity * price;
+          if (availableBalance < 0) {
+            availableBalance = 0;
+          }
+          updateAvailableBalance();
+        }
+
+        tradeMessageEl.textContent = `Order ${orderId} placed successfully!`;
+        tradeMessageEl.className = 'mt-4 text-center text-sm font-medium text-green-600';
+      tradeForm.reset();
+      tradeStockSymbolInput.value = selectedStock.symbol;
+      tradePriceInput.value = fetchLiveStockData(selectedStock.symbol).price.toFixed(2);
+      }, 1500);
+      // Add stock to portfolio modal with quantity or handle sell
+      if (type === 'buy') {
+        addStockToPortfolio(selectedStock.symbol, quantity);
+      } else if (type === 'sell') {
+        // Handle sell: reduce quantity or remove stock from portfolio
+        const portfolioStocks = document.getElementById('portfolio-stocks');
+        const existingStockEl = [...portfolioStocks.children].find(child => child.dataset.symbol === selectedStock.symbol);
+        if (existingStockEl) {
+          const qtyEl = existingStockEl.querySelector('.stock-quantity');
+          let currentQty = parseInt(qtyEl.textContent, 10);
+          if (currentQty > quantity) {
+            qtyEl.textContent = currentQty - quantity;
+          } else {
+            portfolioStocks.removeChild(existingStockEl);
+          }
+        }
+        // Add funds back on sell at current price * quantity
+        const currentPrice = fetchLiveStockData(selectedStock.symbol).price;
+        availableBalance += currentPrice * quantity;
+        updateAvailableBalance();
+      }
+    });
+
+    // Available balance variable
+    let availableBalance = 50000.00;
+
+    // Function to update available balance display
+    function updateAvailableBalance() {
+      const availableBalanceEl = document.getElementById('available-balance');
+      availableBalanceEl.textContent = `₹${availableBalance.toFixed(2)}`;
+    }
+
+    // Function to add stock symbol to portfolio modal with quantity and sell button
+    function addStockToPortfolio(symbol, quantity) {
+      const portfolioStocks = document.getElementById('portfolio-stocks');
+      // Check if stock already exists
+      const existingStockEl = [...portfolioStocks.children].find(child => child.dataset.symbol === symbol);
+      if (existingStockEl) {
+        // Update quantity
+        const qtyEl = existingStockEl.querySelector('.stock-quantity');
+        qtyEl.textContent = parseInt(qtyEl.textContent, 10) + quantity;
+        return;
+      }
+      const stockEl = document.createElement('div');
+      stockEl.dataset.symbol = symbol;
+      stockEl.className = 'bg-blue-100 text-blue-700 px-3 py-2 rounded-md text-base font-semibold flex justify-between items-center';
+      stockEl.innerHTML = `
+        <span>${symbol} - <span class="stock-quantity">${quantity}</span></span>
+        <button class="sell-button bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm font-semibold transition">Sell</button>
+      `;
+      portfolioStocks.appendChild(stockEl);
+
+      // Add sell button event listener
+      const sellButton = stockEl.querySelector('.sell-button');
+      sellButton.addEventListener('click', () => {
+        let currentQty = parseInt(stockEl.querySelector('.stock-quantity').textContent, 10);
+        if (currentQty > 1) {
+          stockEl.querySelector('.stock-quantity').textContent = currentQty - 1;
+        } else {
+          portfolioStocks.removeChild(stockEl);
+        }
+        // Add funds back on sell at current price
+        const currentPrice = fetchLiveStockData(symbol).price;
+        availableBalance += currentPrice;
+        updateAvailableBalance();
+      });
+    }
+
+    // Update orders table
+    function updateOrdersTable() {
+      const tbody = document.getElementById('orders-table-body');
+      tbody.innerHTML = '';
+      if (orders.length === 0) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="7" class="px-6 py-4 text-center text-gray-500">No orders placed yet.</td>`;
+        tbody.appendChild(tr);
+        return;
+      }
+      orders.forEach((order) => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-gray-50';
+        tr.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-mono">${order.id}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">${order.stock}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm ${
+            order.type === 'buy' ? 'text-green-600' : 'text-red-600'
+          } font-semibold capitalize">${order.type}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${order.quantity}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">₹${order.price.toFixed(2)}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-semibold">${order.status}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${order.time}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Initial load
+    updateStockList();
+    updateOrdersTable();
+
+    // Orders modal toggle
+    const ordersButton = document.getElementById('orders-button');
+    const ordersSection = document.getElementById('orders-section');
+    const closeOrdersSection = document.getElementById('close-orders-section');
+    const ordersList = document.getElementById('orders-list');
+
+    ordersButton.addEventListener('click', () => {
+      ordersSection.classList.remove('hidden');
+    });
+
+    closeOrdersSection.addEventListener('click', () => {
+      ordersSection.classList.add('hidden');
+    });
+
+    // Close orders section if clicked outside the modal content
+    ordersSection.addEventListener('click', (event) => {
+      if (event.target === ordersSection) {
+        ordersSection.classList.add('hidden');
+      }
+    });
+
+    // Function to add order to orders modal
+    function addOrderToOrdersModal(order) {
+      const orderEl = document.createElement('div');
+      orderEl.className = 'bg-gray-100 rounded-md p-3 flex flex-col space-y-1';
+      orderEl.innerHTML = `
+        <div><strong>Stock:</strong> ${order.stock}</div>
+        <div><strong>Operation:</strong> ${order.type === 'buy' ? 'Bought' : 'Sold'}</div>
+        <div><strong>Quantity:</strong> ${order.quantity}</div>
+        <div><strong>Price:</strong> ₹${order.price.toFixed(2)}</div>
+        <div><strong>Date:</strong> ${order.time}</div>
+      `;
+      ordersList.prepend(orderEl);
+    }
+
+    // Modify updateOrdersTable to also update orders modal
+    const originalUpdateOrdersTable = updateOrdersTable;
+    updateOrdersTable = function() {
+      originalUpdateOrdersTable();
+      ordersList.innerHTML = '';
+      orders.forEach(order => addOrderToOrdersModal(order));
+    };
+
+    // Periodically update prices every 10 seconds
+    setInterval(() => {
+      updateAllPrices();
+      // If a stock is selected, update its details price and change
+      if (selectedStock) {
+        const liveData = fetchLiveStockData(selectedStock.symbol);
+        stockPriceEl.textContent = `₹${liveData.price.toFixed(2)}`;
+        stockChangeEl.textContent = `${liveData.changePercent > 0 ? '+' : ''}${liveData.changePercent.toFixed(2)}%`;
+        stockChangeEl.classList.remove('text-green-600', 'text-red-600');
+        if (liveData.changePercent > 0) {
+          stockChangeEl.classList.add('text-green-600');
+        } else if (liveData.changePercent < 0) {
+          stockChangeEl.classList.add('text-red-600');
+        }
+        tradePriceInput.value = liveData.price.toFixed(2);
+      }
+    }, 1000);
+  </script>
+  <script>
+    // Portfolio modal toggle
+    const portfolioButton = document.getElementById('portfolio-button');
+    const portfolioSection = document.getElementById('portfolio-section');
+    const closePortfolioSection = document.getElementById('close-portfolio-section');
+
+    portfolioButton.addEventListener('click', () => {
+      portfolioSection.classList.remove('hidden');
+    });
+
+    closePortfolioSection.addEventListener('click', () => {
+      portfolioSection.classList.add('hidden');
+    });
+
+    // Close portfolio section if clicked outside the modal content
+    portfolioSection.addEventListener('click', (event) => {
+      if (event.target === portfolioSection) {
+        portfolioSection.classList.add('hidden');
+      }
+    });
+  </script>
+  <script>
+    // Toggle funds dropdown on button click for accessibility
+    const fundsButton = document.getElementById('funds-button');
+    const fundsSection = document.getElementById('funds-section');
+    const closeFundsSection = document.getElementById('close-funds-section');
+
+    fundsButton.addEventListener('click', () => {
+      fundsSection.classList.remove('hidden');
+    });
+
+    closeFundsSection.addEventListener('click', () => {
+      fundsSection.classList.add('hidden');
+    });
+
+    // Close funds section if clicked outside the modal content
+    fundsSection.addEventListener('click', (event) => {
+      if (event.target === fundsSection) {
+        fundsSection.classList.add('hidden');
+      }
+    });
+  </script>
+  <script>
+    // Funds action modal toggle and form handling
+    const addFundsBtn = document.getElementById('add-funds-btn');
+    const withdrawFundsBtn = document.getElementById('withdraw-funds-btn');
+    const fundsActionSection = document.getElementById('funds-action-section');
+    const closeFundsActionSection = document.getElementById('close-funds-action-section');
+    const fundsActionTitle = document.getElementById('funds-action-title');
+    const fundsActionForm = document.getElementById('funds-action-form');
+    const fundsActionMessage = document.getElementById('funds-action-message');
+    const fundsAmountInput = document.getElementById('funds-amount');
+    const paymentMethodSelect = document.getElementById('payment-method');
+
+    let fundsActionType = 'add'; // 'add' or 'withdraw'
+
+    addFundsBtn.addEventListener('click', () => {
+      fundsActionType = 'add';
+      fundsActionTitle.textContent = 'Add Funds';
+      fundsActionMessage.textContent = '';
+      fundsAmountInput.value = '';
+      paymentMethodSelect.value = '';
+      fundsActionSection.classList.remove('hidden');
+    });
+
+    withdrawFundsBtn.addEventListener('click', () => {
+      fundsActionType = 'withdraw';
+      fundsActionTitle.textContent = 'Withdraw Funds';
+      fundsActionMessage.textContent = '';
+      fundsAmountInput.value = '';
+      paymentMethodSelect.value = '';
+      fundsActionSection.classList.remove('hidden');
+    });
+
+    closeFundsActionSection.addEventListener('click', () => {
+      fundsActionSection.classList.add('hidden');
+    });
+
+    fundsActionForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const amount = parseFloat(fundsAmountInput.value);
+      const paymentMethod = paymentMethodSelect.value;
+      if (isNaN(amount) || amount <= 0) {
+        fundsActionMessage.textContent = 'Please enter a valid amount.';
+        fundsActionMessage.className = 'mt-4 text-center text-sm font-medium text-red-600';
+        return;
+      }
+      if (!paymentMethod) {
+        fundsActionMessage.textContent = 'Please select a payment method.';
+        fundsActionMessage.className = 'mt-4 text-center text-sm font-medium text-red-600';
+        return;
+      }
+
+      // Simulate processing delay
+      fundsActionMessage.textContent = `${fundsActionType === 'add' ? 'Adding' : 'Withdrawing'} funds...`;
+      fundsActionMessage.className = 'mt-4 text-center text-sm font-medium text-blue-600';
+
+      setTimeout(() => {
+        if (fundsActionType === 'add') {
+          availableBalance += amount;
+        } else {
+          if (amount > availableBalance) {
+            fundsActionMessage.textContent = 'Insufficient funds to withdraw.';
+            fundsActionMessage.className = 'mt-4 text-center text-sm font-medium text-red-600';
+            return;
+          }
+          availableBalance -= amount;
+        }
+        updateAvailableBalance();
+        fundsActionMessage.textContent = `Funds ${fundsActionType === 'add' ? 'added' : 'withdrawn'} successfully!`;
+        fundsActionMessage.className = 'mt-4 text-center text-sm font-medium text-green-600';
+        setTimeout(() => {
+          fundsActionSection.classList.add('hidden');
+        }, 1500);
+      }, 1500);
+    });
+  </script>
+ </body>
+</html>

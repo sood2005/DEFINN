@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Binance Markets Overview Clone</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0b0b0b;
+      color: #f0f0f0;
+    }
+    /* Custom scrollbar for market table */
+    .scrollbar-thin::-webkit-scrollbar {
+      height: 8px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background-color: #f3ba2f;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-black border-b border-gray-800">
+    <div class="container mx-auto flex items-center justify-between py-4 px-6">
+      <div class="flex items-center space-x-4">
+        <img src="definn.svg" alt="Binance Logo" class="h-8 w-8" width="50" height="50"/>
+        <h1 class="text-yellow-400 font-bold text-xl">DEFINN</h1>
+      </div>
+      <nav class="hidden md:flex space-x-6 text-gray-300 font-semibold">
+        <a href="#" class="hover:text-yellow-400 transition">Markets</a>
+        <a href="#" class="hover:text-yellow-400 transition">Trade</a>
+       
+      </nav>
+      <div class="hidden md:flex space-x-4 items-center">
+        <button id="connectWalletBtn" class="bg-yellow-400 text-black font-semibold px-4 py-1 rounded hover:bg-yellow-500 transition">Connect Wallet</button>
+        <button class="bg-yellow-400 text-black font-semibold px-4 py-1 rounded hover:bg-yellow-500 transition">Log In</button>
+        <button class="border border-yellow-400 text-yellow-400 font-semibold px-4 py-1 rounded hover:bg-yellow-400 hover:text-black transition">Register</button>
+      </div>
+      <button class="md:hidden text-yellow-400 focus:outline-none">
+        <i class="fas fa-bars fa-lg"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-grow container mx-auto px-4 py-8">
+    <!-- Markets Page -->
+    <section id="markets-page">
+      <h2 class="text-3xl font-bold mb-6">Markets Overview</h2>
+
+      <!-- Market Table -->
+      <div class="overflow-x-auto scrollbar-thin rounded-lg border border-gray-700">
+        <table class="min-w-full text-left text-sm">
+          <thead class="bg-gray-900 text-gray-400 uppercase">
+            <tr>
+              <th class="px-4 py-3">Pair</th>
+              <th class="px-4 py-3">Last Price</th>
+              <th class="px-4 py-3">24h Change</th>
+              <th class="px-4 py-3">24h High</th>
+              <th class="px-4 py-3">24h Low</th>
+              <th class="px-4 py-3">24h Volume</th>
+              <th class="px-4 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="market-data-body">
+            <tr>
+              <td colspan="7" class="text-center py-6 text-gray-400">Loading market data...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Trade Page -->
+    <section id="trade-page" class="hidden">
+      <h2 class="text-3xl font-bold mb-6">Crypto News</h2>
+      <div id="news-container" class="space-y-4 max-h-[600px] overflow-y-auto rounded-lg border border-gray-700 p-4 bg-black">
+        <p class="text-gray-400">Loading news...</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-black border-t border-gray-800 py-4 mt-12">
+    <div class="container mx-auto text-center text-gray-500 text-sm">
+      &copy; 2024 Binance Clone. All rights reserved.
+    </div>
+  </footer>
+
+  <script>
+    let userAccount = null;
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          userAccount = accounts[0];
+          document.getElementById('connectWalletBtn').textContent = `Connected: ${userAccount.slice(0,6)}...${userAccount.slice(-4)}`;
+          document.getElementById('connectWalletBtn').disabled = true;
+        } catch (error) {
+          alert('Wallet connection rejected.');
+        }
+      } else {
+        alert('MetaMask is not installed. Please install it to use this feature.');
+      }
+    }
+
+    async function buyCrypto(symbol) {
+      if (!userAccount) {
+        alert('Please connect your wallet first.');
+        return;
+      }
+      // Placeholder: Send 0.01 ETH to a dummy address as "buy"
+      try {
+        const txParams = {
+          from: userAccount,
+          to: '0x000000000000000000000000000000000000dead', // dummy address
+          value: '0x2386f26fc10000', // 0.01 ETH in wei hex
+          gasPrice: '0x09184e72a000', // gas price
+          gas: '0x2710', // gas limit
+        };
+        await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [txParams],
+        });
+        alert(`Buy order for ${symbol} sent!`);
+      } catch (error) {
+        alert('Transaction failed or rejected.');
+      }
+    }
+
+    async function sellCrypto(symbol) {
+      if (!userAccount) {
+        alert('Please connect your wallet first.');
+        return;
+      }
+      // Placeholder: Send 0.01 ETH to a dummy address as "sell"
+      try {
+        const txParams = {
+          from: userAccount,
+          to: '0x000000000000000000000000000000000000dead', // dummy address
+          value: '0x2386f26fc10000', // 0.01 ETH in wei hex
+          gasPrice: '0x09184e72a000', // gas price
+          gas: '0x2710', // gas limit
+        };
+        await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [txParams],
+        });
+        alert(`Sell order for ${symbol} sent!`);
+      } catch (error) {
+        alert('Transaction failed or rejected.');
+      }
+    }
+
+    async function fetchMarketData() {
+      const tbody = document.getElementById('market-data-body');
+      try {
+        const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        // Filter for USDT pairs only
+        const usdtPairs = data.filter(item => item.symbol.endsWith('USDT'));
+        // Sort by quoteVolume descending
+        usdtPairs.sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume));
+        // Take top 20 pairs
+        const topPairs = usdtPairs.slice(0, 20);
+
+        tbody.innerHTML = '';
+        topPairs.forEach(pair => {
+          const price = parseFloat(pair.lastPrice).toFixed(6);
+          const priceChange = parseFloat(pair.priceChangePercent).toFixed(2);
+          const highPrice = parseFloat(pair.highPrice).toFixed(6);
+          const lowPrice = parseFloat(pair.lowPrice).toFixed(6);
+          const volume = parseFloat(pair.volume).toFixed(2);
+
+          const isPositive = priceChange >= 0;
+          const changeClass = isPositive ? 'text-green-500' : 'text-red-500';
+          const changeSign = isPositive ? '+' : '';
+
+          // Construct icon URL for the base asset
+          const baseAsset = pair.symbol.replace('USDT', '');
+          const iconUrl = `https://cryptologos.cc/logos/${baseAsset.toLowerCase()}-${baseAsset.toLowerCase()}-logo.svg?v=023`;
+
+          const row = document.createElement('tr');
+          row.className = 'border-b border-gray-800 hover:bg-gray-800 transition';
+          row.innerHTML = `
+            <td class="px-4 py-3 flex items-center space-x-2">
+              <img src="${iconUrl}" alt="${baseAsset}" class="h-6 w-6" onerror="this.style.display='none'" />
+              <span>${pair.symbol.slice(0, -4)}/USDT</span>
+            </td>
+            <td class="px-4 py-3">$${price}</td>
+            <td class="px-4 py-3 ${changeClass}">${changeSign}${priceChange}%</td>
+            <td class="px-4 py-3">$${highPrice}</td>
+            <td class="px-4 py-3">$${lowPrice}</td>
+            <td class="px-4 py-3">${volume} ${baseAsset}</td>
+            <td class="px-4 py-3 space-x-2">
+              <button onclick="buyCrypto('${pair.symbol}')" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-3 py-1 rounded transition">Buy</button>
+              <button onclick="sellCrypto('${pair.symbol}')" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-1 rounded transition">Sell</button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-red-500">Failed to load market data.</td></tr>`;
+        console.error('Error fetching market data:', error);
+      }
+    }
+
+      document.getElementById('connectWalletBtn').addEventListener('click', connectWallet);
+
+      // Page switching logic
+      const marketsPage = document.getElementById('markets-page');
+      const tradePage = document.getElementById('trade-page');
+      const navLinks = document.querySelectorAll('nav a');
+
+      navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const text = link.textContent.trim();
+
+          if (text === 'Markets') {
+            marketsPage.classList.remove('hidden');
+            tradePage.classList.add('hidden');
+          } else if (text === 'Trade') {
+            marketsPage.classList.add('hidden');
+            tradePage.classList.remove('hidden');
+            fetchCryptoNews();
+          } else {
+            // For other nav options, do nothing or add future logic
+          }
+        });
+      });
+
+      fetchMarketData();ṣ
+      setInterval(fetchMarketData, 3000);
+
+      // Crypto News API key
+      const cryptoNewsApiKey = 'pub_84295477a80254ff20c10a6efef160f61e22e';
+
+      async function fetchCryptoNews() {
+        const newsContainer = document.getElementById('news-container');
+        newsContainer.innerHTML = '<p class="text-gray-400">Loading news...</p>';
+        try {
+          const response = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://www.coindesk.com/arc/outboundfeeds/rss/'));
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          const data = await response.json();
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+          const items = xmlDoc.querySelectorAll("item");
+          if (items.length === 0) {
+            newsContainer.innerHTML = '<p class="text-gray-400">No news available.</p>';
+            return;
+          }
+          newsContainer.innerHTML = '';
+          items.forEach(item => {
+            const title = item.querySelector("title")?.textContent || "No title";
+            const link = item.querySelector("link")?.textContent || "#";
+            const pubDate = item.querySelector("pubDate")?.textContent || "";
+            const date = pubDate ? new Date(pubDate).toLocaleString() : "";
+            const newsEl = document.createElement('div');
+            newsEl.className = 'p-4 border border-gray-700 rounded hover:bg-gray-800 transition cursor-pointer';
+            newsEl.innerHTML = `
+              <a href="${link}" target="_blank" rel="noopener noreferrer" class="text-yellow-400 font-semibold text-lg hover:underline">${title}</a>
+              <p class="text-gray-400 text-sm mt-1">${date}</p>
+            `;
+            newsContainer.appendChild(newsEl);
+          });
+        } catch (error) {
+          newsContainer.innerHTML = `<p class="text-red-500">Failed to load news.</p>`;
+          console.error('Error fetching crypto news:', error);
+        }
+      }
+    </script>
+
+</body>
+</html>

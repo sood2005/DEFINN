@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Digital Finance Dashboard</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background-color: black;
+      color: white;
+    }
+
+    .navbar {
+      background-color: #2c3e50;
+      padding: 1rem 2rem;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar h1 {
+      font-size: 1.5rem;
+    }
+
+    .navbar nav a {
+      color: white;
+      margin-left: 1.5rem;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .container {
+      padding: 2rem;
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      background: #231ce8;
+      background: linear-gradient(90deg, rgba(35, 28, 232, 1) 5%, rgba(177, 38, 212, 1) 100%, rgba(224, 65, 84, 0) 100%, rgba(145, 51, 196, 1) 100%);
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      padding: 4rem;
+      width: 300px;
+      gap: 2rem;
+      min-height: 500px;
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card h2 {
+      margin-bottom: 1rem;
+      font-size: 2rem;
+      color:#ffff;
+    }
+
+    .card p {
+      color: #ffff;
+    }
+    .icon {
+      font-size: 3rem;
+      color: #ffff;
+    }
+
+    .card .icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="navbar">
+    <h1>DeFinn Dashboard</h1>
+    
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <div class="icon">📱</div>
+      <a href="/pay/payment.html"><h2>Payments</h2></a>
+      <p>Instant bank transfers, bill payments, and peer-to-peer payments using UPI technology.</p>
+    </div>
+
+    <div class="card">
+      <div class="icon">🪙</div>
+      <a href="crypto.html"><h2>Crypto</h2></a>
+      <p>Buy, sell, and track digital assets like Bitcoin, Ethereum, and more with real-time data.</p>
+    </div>
+
+    <div class="card">
+      <div class="icon">📈</div>
+      <a href="stock.html"><h2>Stocks</h2></a>
+      <p>Monitor stock performance, invest in equity markets, and manage your portfolio easily.</p>
+    </div>
+  </div>
+
+</body>
+</html>
