@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Payment Interface</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    /* Subtle transition for tabs */
+    .tab-content {
+      transition: all 0.3s ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col items-center p-4">
+  <div class="max-w-4xl w-full bg-white rounded-lg shadow-lg p-6">
+    <header class="mb-8">
+      <h1 class="text-3xl font-semibold text-gray-800 mb-2">Payment Dashboard</h1>
+      <div class="flex flex-wrap justify-between items-center gap-4">
+        <div class="flex items-center space-x-3">
+          <i class="fas fa-id-badge text-indigo-600 text-2xl"></i>
+          <div>
+            <p class="text-gray-600 text-sm">Your Payment ID</p>
+            <p class="text-lg font-medium text-gray-900 select-all" title="Click to copy" onclick="copyToClipboard('userPaymentId')"
+              id="userPaymentId">USER123456789</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-3">
+          <i class="fas fa-wallet text-green-600 text-2xl"></i>
+          <div>
+            <p class="text-gray-600 text-sm">Wallet Balance</p>
+            <p class="text-lg font-semibold text-gray-900" id="walletAmount">$1,250.00</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- Send Money Section -->
+      <section class="bg-indigo-50 rounded-lg p-5 shadow-sm">
+        <h2 class="text-xl font-semibold text-indigo-700 mb-4">Send Money</h2>
+        <div class="flex space-x-4 mb-4">
+          <button class="send-mode-btn bg-indigo-600 text-white px-4 py-2 rounded-md flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-indigo-400" data-mode="qr">
+            <i class="fas fa-qrcode"></i><span>Scan QR</span>
+          </button>
+          <button class="send-mode-btn bg-indigo-100 text-indigo-700 px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-400" data-mode="contacts">
+            <i class="fas fa-address-book"></i><span>Contacts</span>
+          </button>
+          <button class="send-mode-btn bg-indigo-100 text-indigo-700 px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-400" data-mode="paymentId">
+            <i class="fas fa-id-badge"></i><span>Payment ID</span>
+          </button>
+        </div>
+        <div id="sendModeContent" class="tab-content">
+          <!-- QR Code Send -->
+          <div class="send-mode-panel" data-panel="qr">
+            <p class="text-gray-700 mb-3">Scan the recipient's QR code to send money.</p>
+            <div id="qr-reader" class="w-48 h-48 mx-auto rounded-md border border-gray-300 bg-white"></div>
+            <button id="start-scan-btn" class="mt-2 w-1/2 bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition">Start Camera</button>
+            <button id="stop-scan-btn" class="mt-2 ml-2 w-1/2 bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition">Stop Camera</button>
+            <p id="qr-result" class="mt-2 text-center text-indigo-700 font-semibold"></p>
+          </div>
+          <!-- Contacts Send -->
+        <div class="send-mode-panel hidden" data-panel="contacts">
+          <p class="text-gray-700 mb-3">Select a contact to send money.</p>
+          <select id="send-contact-select" class="w-full p-2 border border-gray-300 rounded-md" aria-label="Select contact to send money">
+            <option value="" disabled selected>Select contact</option>
+            <option value="Alice Johnson">Alice Johnson</option>
+            <option value="Bob Smith">Bob Smith</option>
+            <option value="Charlie Davis">Charlie Davis</option>
+          </select>
+          <input id="send-contact-amount" type="number" min="0" step="0.01" placeholder="Amount" class="mt-3 w-full p-2 border border-gray-300 rounded-md" aria-label="Amount to send" />
+          <button id="send-contact-btn" class="mt-4 w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition">Send</button>
+        </div>
+          <!-- Payment ID Send -->
+        <div class="send-mode-panel hidden" data-panel="paymentId">
+          <p class="text-gray-700 mb-3">Enter recipient's Payment ID to send money.</p>
+          <input id="send-paymentid-input" type="text" placeholder="Recipient Payment ID" class="w-full p-2 border border-gray-300 rounded-md" aria-label="Recipient Payment ID" />
+          <input id="send-paymentid-amount" type="number" min="0" step="0.01" placeholder="Amount" class="mt-3 w-full p-2 border border-gray-300 rounded-md" aria-label="Amount to send" />
+          <button id="send-paymentid-btn" class="mt-4 w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition">Send</button>
+        </div>
+        </div>
+      </section>
+
+      <!-- Receive Money Section -->
+      <section class="bg-green-50 rounded-lg p-5 shadow-sm">
+        <h2 class="text-xl font-semibold text-green-700 mb-4">Receive Money</h2>
+        <div class="flex space-x-4 mb-4">
+          <button class="receive-mode-btn bg-green-600 text-white px-4 py-2 rounded-md flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-green-400" data-mode="qr">
+            <i class="fas fa-qrcode"></i><span>QR Code</span>
+          </button>
+          <button class="receive-mode-btn bg-green-100 text-green-700 px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-400" data-mode="contacts">
+            <i class="fas fa-address-book"></i><span>Contacts</span>
+          </button>
+          <button class="receive-mode-btn bg-green-100 text-green-700 px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-400" data-mode="paymentId">
+            <i class="fas fa-id-badge"></i><span>Payment ID</span>
+          </button>
+        </div>
+        <div id="receiveModeContent" class="tab-content">
+          <!-- QR Code Receive -->
+          <div class="receive-mode-panel" data-panel="qr">
+            <p class="text-gray-700 mb-3">Show your QR code to receive money.</p>
+            <div id="user-qr-code" class="w-48 h-48 bg-white border border-gray-300 rounded-md flex items-center justify-center mx-auto"></div>
+          </div>
+          <!-- Contacts Receive -->
+          <div class="receive-mode-panel hidden" data-panel="contacts">
+            <p class="text-gray-700 mb-3">Select a contact to request money from.</p>
+            <select class="w-full p-2 border border-gray-300 rounded-md" aria-label="Select contact to request money">
+              <option value="" disabled selected>Select contact</option>
+              <option value="contact1">Alice Johnson</option>
+              <option value="contact2">Bob Smith</option>
+              <option value="contact3">Charlie Davis</option>
+            </select>
+            <input type="number" min="0" step="0.01" placeholder="Amount" class="mt-3 w-full p-2 border border-gray-300 rounded-md" aria-label="Amount to request" />
+            <button class="mt-4 w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition">Request</button>
+          </div>
+          <!-- Payment ID Receive -->
+          <div class="receive-mode-panel hidden" data-panel="paymentId">
+            <p class="text-gray-700 mb-3">Share your Payment ID to receive money.</p>
+            <p class="font-mono bg-white p-3 rounded-md border border-gray-300 select-all cursor-pointer" title="Click to copy" onclick="copyToClipboard('userPaymentId')">USER123456789</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Transaction History -->
+    <section class="mt-10 bg-white rounded-lg shadow p-6 max-w-4xl mx-auto">
+      <h2 class="text-2xl font-semibold text-gray-800 mb-4">Transaction History</h2>
+      <div class="overflow-y-auto max-h-64 border border-gray-200 rounded-md">
+        <table class="w-full text-left text-gray-700">
+          <thead class="bg-gray-100 sticky top-0">
+            <tr>
+              <th class="py-2 px-4">Date</th>
+              <th class="py-2 px-4">Type</th>
+              <th class="py-2 px-4">Amount</th>
+              <th class="py-2 px-4">From</th>
+              <th class="py-2 px-4">To</th>
+            </tr>
+          </thead>
+          <tbody id="transactionHistory">
+            <tr class="border-b border-gray-200 hover:bg-gray-50">
+              <td class="py-2 px-4">2024-06-01</td>
+              <td class="py-2 px-4 text-green-600 font-semibold">Received</td>
+              <td class="py-2 px-4">$150.00</td>
+              <td class="py-2 px-4">Alice Johnson</td>
+              <td class="py-2 px-4">You</td>
+            </tr>
+            <tr class="border-b border-gray-200 hover:bg-gray-50">
+              <td class="py-2 px-4">2024-05-28</td>
+              <td class="py-2 px-4 text-red-600 font-semibold">Sent</td>
+              <td class="py-2 px-4">$75.00</td>
+              <td class="py-2 px-4">You</td>
+              <td class="py-2 px-4">Bob Smith</td>
+            </tr>
+            <tr class="border-b border-gray-200 hover:bg-gray-50">
+              <td class="py-2 px-4">2024-05-20</td>
+              <td class="py-2 px-4 text-green-600 font-semibold">Received</td>
+              <td class="py-2 px-4">$200.00</td>
+              <td class="py-2 px-4">Charlie Davis</td>
+              <td class="py-2 px-4">You</td>
+            </tr>
+            <!-- More transactions can be added here -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Tab switching logic for Send Money
+    const sendButtons = document.querySelectorAll('.send-mode-btn');
+    const sendPanels = document.querySelectorAll('.send-mode-panel');
+    sendButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        sendButtons.forEach(btn => {
+          btn.classList.remove('bg-indigo-600', 'text-white');
+          btn.classList.add('bg-indigo-100', 'text-indigo-700');
+        });
+        button.classList.add('bg-indigo-600', 'text-white');
+        button.classList.remove('bg-indigo-100', 'text-indigo-700');
+
+        const mode = button.getAttribute('data-mode');
+        sendPanels.forEach(panel => {
+          panel.classList.toggle('hidden', panel.getAttribute('data-panel') !== mode);
+        });
+      });
+    });
+
+    // Tab switching logic for Receive Money
+    const receiveButtons = document.querySelectorAll('.receive-mode-btn');
+    const receivePanels = document.querySelectorAll('.receive-mode-panel');
+    receiveButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        receiveButtons.forEach(btn => {
+          btn.classList.remove('bg-green-600', 'text-white');
+          btn.classList.add('bg-green-100', 'text-green-700');
+        });
+        button.classList.add('bg-green-600', 'text-white');
+        button.classList.remove('bg-green-100', 'text-green-700');
+
+        const mode = button.getAttribute('data-mode');
+        receivePanels.forEach(panel => {
+          panel.classList.toggle('hidden', panel.getAttribute('data-panel') !== mode);
+        });
+      });
+    });
+
+    // Copy to clipboard helper
+    function copyToClipboard(elementId) {
+      const text = document.getElementById(elementId).textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Copied to clipboard: ' + text);
+      });
+    }
+
+    // Send money via contact
+    const sendContactBtn = document.getElementById('send-contact-btn');
+    sendContactBtn.addEventListener('click', async () => {
+      const to = document.getElementById('send-contact-select').value;
+      const amount = parseFloat(document.getElementById('send-contact-amount').value);
+      const from = document.getElementById('userPaymentId').textContent.trim();
+
+      if (!to || !amount || amount <= 0) {
+        alert('Please select a contact and enter a valid amount.');
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:3000/api/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from, to, amount }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+          alert(data.message);
+          loadTransactionHistory();
+        } else {
+          alert(data.error || 'Failed to send money.');
+        }
+      } catch (error) {
+        alert('Error sending money: ' + error.message);
+      }
+    });
+
+    // Send money via Payment ID
+    const sendPaymentIdBtn = document.getElementById('send-paymentid-btn');
+    sendPaymentIdBtn.addEventListener('click', async () => {
+      const to = document.getElementById('send-paymentid-input').value.trim();
+      const amount = parseFloat(document.getElementById('send-paymentid-amount').value);
+      const from = document.getElementById('userPaymentId').textContent.trim();
+
+      if (!to || !amount || amount <= 0) {
+        alert('Please enter a valid Payment ID and amount.');
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:3000/api/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from, to, amount }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+          alert(data.message);
+          loadTransactionHistory();
+        } else {
+          alert(data.error || 'Failed to send money.');
+        }
+      } catch (error) {
+        alert('Error sending money: ' + error.message);
+      }
+    });
+
+    // Load transaction history from backend
+    async function loadTransactionHistory() {
+      try {
+        const response = await fetch('http://localhost:3000/api/transactions');
+        const transactions = await response.json();
+        const tbody = document.getElementById('transactionHistory');
+        tbody.innerHTML = '';
+        transactions.forEach(tx => {
+          const tr = document.createElement('tr');
+          tr.className = 'border-b border-gray-200 hover:bg-gray-50';
+          tr.innerHTML = `
+            <td class="py-2 px-4">${new Date(tx.date).toISOString().split('T')[0]}</td>
+            <td class="py-2 px-4 ${tx.type === 'Received' ? 'text-green-600' : 'text-red-600'} font-semibold">${tx.type}</td>
+            <td class="py-2 px-4">$${tx.amount.toFixed(2)}</td>
+            <td class="py-2 px-4">${tx.from}</td>
+            <td class="py-2 px-4">${tx.to}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (error) {
+        alert('Failed to load transaction history: ' + error.message);
+      }
+    }
+
+    // Initialize html5-qrcode scanner for Send Money QR code panel
+    function onScanSuccess(decodedText, decodedResult) {
+      // Handle the scanned code as you like, for example display it
+      const resultElement = document.getElementById('qr-result');
+      resultElement.textContent = `Scanned Payment ID: ${decodedText}`;
+      // Optionally stop scanning after successful scan
+      html5QrcodeScanner.clear();
+    }
+
+    function onScanFailure(error) {
+      // console.warn(`QR scan error: ${error}`);
+      // No action needed on scan failure for now
+    }
+
+    let html5QrcodeScanner;
+    window.addEventListener('load', () => {
+      html5QrcodeScanner = new Html5Qrcode("qr-reader");
+      const config = { fps: 10, qrbox: 250 };
+
+      const startScanBtn = document.getElementById('start-scan-btn');
+      const stopScanBtn = document.getElementById('stop-scan-btn');
+      startScanBtn.addEventListener('click', () => {
+        html5QrcodeScanner.start(
+          { facingMode: "environment" },
+          config,
+          onScanSuccess,
+          onScanFailure
+        ).catch(err => {
+          const resultElement = document.getElementById('qr-result');
+          resultElement.textContent = `Camera access denied or not available.`;
+        });
+      });
+
+      stopScanBtn.addEventListener('click', () => {
+        html5QrcodeScanner.stop().then(() => {
+          const resultElement = document.getElementById('qr-result');
+          resultElement.textContent = 'Camera stopped.';
+        }).catch(err => {
+          const resultElement = document.getElementById('qr-result');
+          resultElement.textContent = `Error stopping camera: ${err}`;
+        });
+      });
+
+      // Generate user payment ID QR code in Receive Money section
+      const userPaymentId = document.getElementById('userPaymentId').textContent.trim();
+      const qrCodeContainer = document.getElementById('user-qr-code');
+
+      // Use Html5Qrcode to generate QR code
+      // Html5Qrcode does not have QR code generation, so use a lightweight library or fallback to a simple method
+      // Using a simple QR code generator library from CDN
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js';
+      script.onload = () => {
+        QRCode.toCanvas(userPaymentId, { width: 192, margin: 1 }, (error, canvas) => {
+          if (error) {
+            qrCodeContainer.innerHTML = '<p class="text-red-600">Failed to generate QR code.</p>';
+            return;
+          }
+          qrCodeContainer.innerHTML = '';
+          qrCodeContainer.appendChild(canvas);
+        });
+      };
+      document.body.appendChild(script);
+
+      // Load transaction history on page load
+      loadTransactionHistory();
+    });
+  </script>
+</body>
+</html>
